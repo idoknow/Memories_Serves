@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Memories Serves API 商务接口文档首页。" />
+    <title>Memories Serves 文档中心</title>
+    <script type="module" src="./src/main.js"></script>
+  </head>
+  <body data-page="overview" class="is-loading">
+    <div class="page-loader" role="status" aria-live="polite" aria-label="正在加载页面">
+      <span class="loader-mark" aria-hidden="true"></span>
+      <span class="loader-text">Memories Serves</span>
+    </div>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./index.html" aria-label="Memories Serves 首页">
+          <span class="brand-mark" data-icon="spark"></span>
+          <span><strong>Memories Serves</strong><small data-i18n="subtitle">API Documentation</small></span>
+        </a>
+        <button class="icon-button nav-toggle" type="button" data-nav-toggle data-icon="menu" data-i18n-label="menuLabel" aria-expanded="false" aria-controls="site-nav"></button>
+        <nav class="nav-links" id="site-nav" aria-label="文档导航">
+          <a class="active" href="./index.html" data-i18n="navOverview">概览</a>
+          <a href="./api.html" data-i18n="navApi">接口参考</a>
+          <a href="./operations.html" data-i18n="navOperations">运维说明</a>
+          <a href="./ai.html" data-i18n="navAi">AI 对接</a>
+        </nav>
+        <div class="topbar-actions">
+          <button class="icon-button language-button" type="button" data-icon="language" data-language-toggle data-i18n-label="langLabel"><span>EN</span></button>
+          <a class="icon-button github-button" href="https://github.com/idoknow/Memories_Serves" target="_blank" rel="noreferrer" data-icon="github" data-i18n-label="githubLabel"></a>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero-window business-hero" aria-labelledby="page-title">
+        <div class="window-bar" aria-label="窗口控制按钮样式">
+          <span class="control close"></span>
+          <span class="control minimize"></span>
+          <span class="control zoom"></span>
+          <span class="window-title">Memories Serves · Business API Suite</span>
+        </div>
+          <div class="hero-grid">
+            <div>
+              <p class="eyebrow">Production API Documentation</p>
+              <h1 id="page-title" data-i18n="overviewTitle">面向业务系统的图片 URL 接口服务文档</h1>
+              <p class="lead" data-i18n="overviewLead">一套正式、清晰、可交付的接口文档，覆盖项目资料、核心能力、REST API、备份策略、后台任务与 AI Agent 对接契约。</p>
+              <div class="hero-actions">
+                <a class="primary-action" href="./api.html" data-i18n="viewApi">查看接口参考</a>
+                <a class="secondary-action" href="./ai.html" data-i18n="aiQuickStart">AI 快速接入</a>
+              </div>
+            </div>
+            <aside class="status-card" aria-label="项目状态">
+              <div class="status-row"><span data-i18n="repository">仓库</span><strong>idoknow/Memories_Serves</strong></div>
+              <div class="status-row"><span data-i18n="organization">组织</span><strong>idoknow</strong></div>
+              <div class="status-row"><span data-i18n="developer">开发人员</span><strong>MrWoods1692</strong></div>
+              <div class="status-row"><span data-i18n="version">版本</span><strong>0.1.0</strong></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="metric-grid" aria-label="核心能力">
+          <article data-icon-card="server"><span data-i18n="pageSize">分页规模</span><strong data-i18n="pageSizeValue">20 条/页</strong><p data-i18n="pageSizeText">固定 keyset 分页，适合稳定读取。</p></article>
+          <article data-icon-card="shield"><span data-i18n="authStrategy">认证策略</span><strong data-i18n="authValue">10 分钟 token</strong><p data-i18n="authText">管理员 key 换取短期操作 token。</p></article>
+          <article data-icon-card="spark"><span data-i18n="runtime">运行环境</span><strong data-i18n="runtimeValue">2c2g 友好</strong><p data-i18n="runtimeText">Rust 异步服务配合 SQLite WAL。</p></article>
+          <article data-icon-card="database"><span data-i18n="backup">备份能力</span><strong>WebDAV</strong><p data-i18n="backupText">每日自动备份 SQLite 数据库。</p></article>
+        </section>
+
+        <section class="content-section split-layout">
+          <div>
+            <p class="eyebrow">Project Profile</p>
+            <h2 data-i18n="projectProfile">项目资料</h2>
+            <p data-i18n="projectProfileText">Memories Serves 是一个使用 Rust、Axum、SQLx 与 SQLite 构建的轻量 API 服务，主要用于保存图片 URL、记录上传时间戳、按 ID 顺序读取，并支持管理员删除和 WebDAV 备份。</p>
+          </div>
+          <div class="info-panel">
+            <a href="https://github.com/idoknow/Memories_Serves" target="_blank" rel="noreferrer">https://github.com/idoknow/Memories_Serves</a>
+            <dl><div><dt>Base URL</dt><dd><code>http://127.0.0.1:3000</code></dd></div><div><dt data-i18n="dataFormat">数据格式</dt><dd>HTTP JSON</dd></div><div><dt data-i18n="database">数据库</dt><dd>SQLite WAL</dd></div></dl>
+          </div>
+        </section>
+
+        <section class="content-section">
+          <p class="eyebrow">Quick Start</p>
+          <h2 data-i18n="quickStart">启动服务</h2>
+          <pre><code class="language-bash">chmod +x scripts/bootstrap.sh
+./scripts/bootstrap.sh</code></pre>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

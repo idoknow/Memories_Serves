@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Memories Serves API 接口参考。" />
+    <title>接口参考 · Memories Serves</title>
+    <script type="module" src="./src/main.js"></script>
+  </head>
+  <body data-page="api" class="is-loading">
+    <div class="page-loader" role="status" aria-live="polite" aria-label="正在加载页面">
+      <span class="loader-mark" aria-hidden="true"></span>
+      <span class="loader-text">Memories Serves</span>
+    </div>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" data-icon="spark"></span>
+          <span><strong>Memories Serves</strong><small data-i18n="subtitle">API Reference</small></span>
+        </a>
+        <button class="icon-button nav-toggle" type="button" data-nav-toggle data-icon="menu" data-i18n-label="menuLabel" aria-expanded="false" aria-controls="site-nav"></button>
+        <nav class="nav-links" id="site-nav" aria-label="文档导航">
+          <a href="./index.html" data-i18n="navOverview">概览</a>
+          <a class="active" href="./api.html" data-i18n="navApi">接口参考</a>
+          <a href="./operations.html" data-i18n="navOperations">运维说明</a>
+          <a href="./ai.html" data-i18n="navAi">AI 对接</a>
+        </nav>
+        <div class="topbar-actions">
+          <button class="icon-button language-button" type="button" data-icon="language" data-language-toggle data-i18n-label="langLabel"><span>EN</span></button>
+          <a class="icon-button github-button" href="https://github.com/idoknow/Memories_Serves" target="_blank" rel="noreferrer" data-icon="github" data-i18n-label="githubLabel"></a>
+        </div>
+      </header>
+      <main class="doc-layout">
+        <aside class="sidebar">
+          <a href="#health" data-i18n="health">健康检查</a>
+          <a href="#create" data-i18n="create">上传 URL</a>
+          <a href="#list" data-i18n="list">读取列表</a>
+          <a href="#token" data-i18n="token">管理员 token</a>
+          <a href="#delete" data-i18n="delete">删除数据</a>
+          <a href="#backup" data-i18n="webdavBackup">WebDAV 备份</a>
+        </aside>
+        <section class="doc-main">
+          <div class="page-heading">
+            <p class="eyebrow">API Reference</p>
+            <h1 data-i18n="apiTitle">接口参考</h1>
+            <p data-i18n="apiIntro">所有接口均返回 JSON。管理类接口需要管理员 token，公开读取和写入接口不需要认证。</p>
+          </div>
+          <article class="endpoint" id="health">
+            <div class="endpoint-head"><span class="method get">GET</span><code>/health</code></div>
+            <p data-i18n="healthText">健康检查接口，用于部署平台探活。</p>
+            <pre><code class="language-bash">curl http://127.0.0.1:3000/health</code></pre>
+            <pre><code class="language-json">{ "ok": true }</code></pre>
+          </article>
+          <article class="endpoint" id="create">
+            <div class="endpoint-head"><span class="method post">POST</span><code>/images</code></div>
+            <p data-i18n="createText">写入单条图片 URL，并返回自增 ID 与上传时间戳。</p>
+            <div class="table-wrap"><table><thead><tr><th data-i18n="field">字段</th><th data-i18n="type">类型</th><th data-i18n="required">必填</th><th data-i18n="description">说明</th></tr></thead><tbody><tr><td><code>url</code></td><td>string</td><td data-i18n="yes">是</td><td data-i18n="urlRule">必须是 http 或 https URL</td></tr></tbody></table></div>
+            <pre><code class="language-bash">curl -X POST http://127.0.0.1:3000/images \
+  -H 'content-type: application/json' \
+  -d '{"url":"https://example.com/a.jpg"}'</code></pre>
+            <pre><code class="language-json">{
+  "id": 1,
+  "url": "https://example.com/a.jpg",
+  "uploaded_at": 1782864000000
+}</code></pre>
+          </article>
+          <article class="endpoint" id="list">
+            <div class="endpoint-head"><span class="method get">GET</span><code>/images?after_id=0</code></div>
+            <p data-i18n="listText">读取图片列表，每页最多 20 条。传入上一页返回的 next_after_id 继续读取。</p>
+            <pre><code class="language-bash">curl 'http://127.0.0.1:3000/images?after_id=0'</code></pre>
+            <pre><code class="language-json">{
+  "data": [
+    { "id": 1, "url": "https://example.com/a.jpg", "uploaded_at": 1782864000000 }
+  ],
+  "next_after_id": null,
+  "limit": 20
+}</code></pre>
+          </article>
+          <article class="endpoint" id="token">
+            <div class="endpoint-head"><span class="method get">GET</span><code>/admin/token?key=...</code></div>
+            <p data-i18n="tokenText">获取管理员 token。首次请求会设置管理员 key，后续必须使用同一个 key。</p>
+            <ul class="rules"><li data-i18n="tokenRule1">token 有效期 10 分钟。</li><li data-i18n="tokenRule2">有效期内重复请求返回当前 token。</li><li data-i18n="tokenRule3">过期后使用正确 key 自动生成新 token。</li></ul>
+            <pre><code class="language-bash">curl 'http://127.0.0.1:3000/admin/token?key=your-secret-key'</code></pre>
+            <pre><code class="language-json">{
+  "token": "ADMIN_TOKEN",
+  "expires_at": 1782864600000,
+  "ttl_seconds": 600
+}</code></pre>
+          </article>
+          <article class="endpoint" id="delete">
+            <div class="endpoint-head"><span class="method post">POST</span><code>/admin/images/delete</code></div>
+            <p data-i18n="deleteText">推荐删除方式，在 body 中携带 token 和目标 ID。</p>
+            <pre><code class="language-bash">curl -X POST http://127.0.0.1:3000/admin/images/delete \
+  -H 'content-type: application/json' \
+  -d '{"token":"ADMIN_TOKEN","id":1}'</code></pre>
+            <pre><code class="language-json">{ "deleted": true, "id": 1 }</code></pre>
+            <div class="endpoint-head secondary"><span class="method delete">DELETE</span><code>/images/:id</code></div>
+            <pre><code class="language-bash">curl -X DELETE http://127.0.0.1:3000/images/1 \
+  -H 'authorization: Bearer ADMIN_TOKEN'</code></pre>
+          </article>
+          <article class="endpoint" id="backup">
+            <div class="endpoint-head"><span class="method post">POST</span><code>/admin/backup</code></div>
+            <p data-i18n="backupApiText">配置 WebDAV 自动备份。关闭备份时只需传入 token 和 enabled=false。</p>
+            <pre><code class="language-bash">curl -X POST http://127.0.0.1:3000/admin/backup \
+  -H 'content-type: application/json' \
+  -d '{
+    "token":"ADMIN_TOKEN",
+    "enabled":true,
+    "webdav_url":"https://dav.example.com/backups/",
+    "username":"user",
+    "password":"pass"
+  }'</code></pre>
+            <pre><code class="language-json">{ "ok": true, "enabled": true }</code></pre>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

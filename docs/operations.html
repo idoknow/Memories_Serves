@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Memories Serves 运维与部署说明。" />
+    <title>运维说明 · Memories Serves</title>
+    <script type="module" src="./src/main.js"></script>
+  </head>
+  <body data-page="operations" class="is-loading">
+    <div class="page-loader" role="status" aria-live="polite" aria-label="正在加载页面">
+      <span class="loader-mark" aria-hidden="true"></span>
+      <span class="loader-text">Memories Serves</span>
+    </div>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" data-icon="spark"></span>
+          <span><strong>Memories Serves</strong><small data-i18n="subtitle">Operations</small></span>
+        </a>
+        <button class="icon-button nav-toggle" type="button" data-nav-toggle data-icon="menu" data-i18n-label="menuLabel" aria-expanded="false" aria-controls="site-nav"></button>
+        <nav class="nav-links" id="site-nav" aria-label="文档导航">
+          <a href="./index.html" data-i18n="navOverview">概览</a>
+          <a href="./api.html" data-i18n="navApi">接口参考</a>
+          <a class="active" href="./operations.html" data-i18n="navOperations">运维说明</a>
+          <a href="./ai.html" data-i18n="navAi">AI 对接</a>
+        </nav>
+        <div class="topbar-actions">
+          <button class="icon-button language-button" type="button" data-icon="language" data-language-toggle data-i18n-label="langLabel"><span>EN</span></button>
+          <a class="icon-button github-button" href="https://github.com/idoknow/Memories_Serves" target="_blank" rel="noreferrer" data-icon="github" data-i18n-label="githubLabel"></a>
+        </div>
+      </header>
+      <main>
+        <section class="page-heading">
+          <p class="eyebrow">Operations</p>
+          <h1 data-i18n="operationsTitle">运维说明</h1>
+          <p data-i18n="operationsIntro">覆盖启动、环境变量、后台调度、WebDAV 备份和小规格服务器运行建议。</p>
+        </section>
+        <section class="content-section">
+          <h2 data-i18n="startup">启动方式</h2>
+          <pre><code class="language-bash">chmod +x scripts/bootstrap.sh
+./scripts/bootstrap.sh</code></pre>
+        </section>
+        <section class="content-section">
+          <h2 data-i18n="envVars">环境变量</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-i18n="variable">变量</th><th data-i18n="defaultValue">默认值</th><th data-i18n="description">说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>PORT</code></td><td><code>3000</code></td><td data-i18n="portText">HTTP 服务端口</td></tr>
+                <tr><td><code>HOST</code></td><td><code>0.0.0.0</code></td><td data-i18n="hostText">监听地址</td></tr>
+                <tr><td><code>DATA_DIR</code></td><td><code>data</code></td><td data-i18n="dataDirText">数据目录</td></tr>
+                <tr><td><code>DB_PATH</code></td><td><code>data/images.sqlite</code></td><td data-i18n="dbPathText">SQLite 文件路径</td></tr>
+                <tr><td><code>ADMIN_PATH</code></td><td><code>/admin/token</code></td><td data-i18n="adminPathText">管理员 token 接口路径</td></tr>
+                <tr><td><code>DB_MAX_CONNECTIONS</code></td><td><code>8</code></td><td data-i18n="dbConnectionsText">SQLite 连接池最大连接数</td></tr>
+                <tr><td><code>RUST_LOG</code></td><td><code>info</code></td><td data-i18n="logText">日志级别</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="feature-grid">
+          <article data-icon-card="server"><h3 data-i18n="nightTask">夜间顺序请求</h3><p data-i18n="nightTaskText">每天 0 点到 6 点顺序请求数据库 URL，每秒约 1 次，并记录最后处理 ID。</p></article>
+          <article data-icon-card="database"><h3 data-i18n="webdavTitle">WebDAV 备份</h3><p data-i18n="webdavText">每天 1 点执行一次 SQLite 备份，启用后通过 WebDAV PUT 上传到目标目录。</p></article>
+          <article data-icon-card="spark"><h3 data-i18n="sqlitePerf">SQLite 性能</h3><p data-i18n="sqlitePerfText">使用 WAL、NORMAL synchronous、busy timeout 和 SQLx 连接池，适合单实例部署。</p></article>
+          <article data-icon-card="shield"><h3 data-i18n="deployAdvice">部署建议</h3><p data-i18n="deployAdviceText">建议使用 systemd 或同类进程管理工具保持单实例运行，不要多进程写同一个 SQLite 文件。</p></article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
