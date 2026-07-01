@@ -1,0 +1,27 @@
+[Unit]
+Description=Memories Serves - Lightweight Image URL API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/memories-serves
+ExecStart=/opt/memories-serves/memories-serves
+Restart=always
+RestartSec=5
+Environment=HOST=0.0.0.0
+Environment=PORT=3000
+Environment=DATA_DIR=/opt/memories-serves/data
+Environment=RUST_LOG=info,tower_http=warn
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/memories-serves/data
+ReadOnlyPaths=/opt/memories-serves
+
+[Install]
+WantedBy=multi-user.target

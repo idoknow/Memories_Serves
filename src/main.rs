@@ -17,7 +17,11 @@ use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use std::{env, net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 use subtle::ConstantTimeEq;
 use tokio::{fs, net::TcpListener, signal, time::sleep};
-use tower_http::{limit::RequestBodyLimitLayer, trace::TraceLayer};
+use tower_http::{
+    cors::CorsLayer,
+    limit::RequestBodyLimitLayer,
+    trace::TraceLayer,
+};
 use tracing::{error, info, warn};
 use url::Url;
 
@@ -27,6 +31,9 @@ const PROBE_START_HOUR: u32 = 0;
 const PROBE_END_HOUR: u32 = 6;
 const PROBE_DELAY: Duration = Duration::from_secs(1);
 const BACKUP_HOUR: u32 = 1;
+const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+const GITHUB_REPO: &str = "idoknow/Memories_Serves";
+const UPDATE_CHECK_INTERVAL: Duration = Duration::from_secs(3600);
 
 #[derive(Clone)]
 struct AppState {
@@ -34,6 +41,7 @@ struct AppState {
     client: Client,
     data_dir: PathBuf,
     db_path: PathBuf,
+    latest_version: Arc<tokio::sync::RwLock<Option<String>>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -44,6 +52,9 @@ struct ErrorBody {
 #[derive(Debug, Serialize)]
 struct HealthBody {
     ok: bool,
+    version: String,
+    latest_version: Option<String>,
+    update_available: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -86,6 +97,18 @@ struct AdminTokenBody {
 struct DeleteImageRequest {
     token: Option<String>,
     id: i64,
+}
+
+#[derive(Debug, Deserialize)]
+struct GithubRelease {
+    tag_name: String,
+}
+
+#[derive(Debug, Serialize)]
+struct VersionBody {
+    current: String,
+    latest: Option<String>,
+    update_available: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -174,6 +197,7 @@ async fn main() -> Result<()> {
             .context("build http client")?,
         data_dir,
         db_path,
+        latest_version: Arc::new(tokio::sync::RwLock::new(None)),
     });
 
     let app = Router::new()
@@ -185,7 +209,9 @@ async fn main() -> Result<()> {
             "/admin/backup",
             get(get_backup_config).post(set_backup_config),
         )
+        .route("/admin/version", get(get_version))
         .route(&admin_path, get(admin_token))
+        .layer(CorsLayer::permissive())
         .layer(middleware::from_fn_with_state(
             state.clone(),
             admin_middleware,
@@ -196,6 +222,7 @@ async fn main() -> Result<()> {
 
     tokio::spawn(probe_loop(state.clone()));
     tokio::spawn(backup_loop(state.clone()));
+    tokio::spawn(update_check_loop(state.clone()));
 
     let addr: SocketAddr = format!("{host}:{port}")
         .parse()
@@ -315,8 +342,15 @@ async fn init_database(db: &SqlitePool) -> Result<()> {
     Ok(())
 }
 
-async fn health() -> Json<HealthBody> {
-    Json(HealthBody { ok: true })
+async fn health(State(state): State<Arc<AppState>>) -> Json<HealthBody> {
+    let latest = state.latest_version.read().await.clone();
+    let update_available = latest.as_ref().is_some_and(|v| v.as_str() != CURRENT_VERSION);
+    Json(HealthBody {
+        ok: true,
+        version: CURRENT_VERSION.to_string(),
+        latest_version: latest,
+        update_available,
+    })
 }
 
 async fn create_image(
@@ -847,6 +881,59 @@ fn error_response(status: StatusCode, message: &str) -> Response {
         }),
     )
         .into_response()
+}
+
+async fn update_check_loop(state: Arc<AppState>) {
+    // 启动时立即检查一次
+    check_for_update(&state).await;
+    loop {
+        sleep(UPDATE_CHECK_INTERVAL).await;
+        check_for_update(&state).await;
+    }
+}
+
+async fn check_for_update(state: &AppState) {
+    let url = format!(
+        "https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+    );
+    match state
+        .client
+        .get(&url)
+        .header("Accept", "application/vnd.github+json")
+        .header("User-Agent", "memories-serves-update-check")
+        .send()
+        .await
+    {
+        Ok(response) => {
+            let body = response.text().await.unwrap_or_default();
+            if let Ok(release) = serde_json::from_str::<GithubRelease>(&body) {
+                let tag = release.tag_name.trim().to_string();
+                let mut latest = state.latest_version.write().await;
+                if latest.as_deref() != Some(tag.as_str()) {
+                    info!(
+                        current = CURRENT_VERSION,
+                        latest = %tag,
+                        update_available = tag != CURRENT_VERSION,
+                        "update check completed"
+                    );
+                }
+                *latest = Some(tag);
+            }
+        }
+        Err(error) => {
+            warn!(?error, "update check request failed");
+        }
+    }
+}
+
+async fn get_version(State(state): State<Arc<AppState>>) -> Json<VersionBody> {
+    let latest = state.latest_version.read().await.clone();
+    let update_available = latest.as_ref().is_some_and(|v| v.as_str() != CURRENT_VERSION);
+    Json(VersionBody {
+        current: CURRENT_VERSION.to_string(),
+        latest,
+        update_available,
+    })
 }
 
 async fn shutdown_signal() {
