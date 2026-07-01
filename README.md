@@ -32,6 +32,25 @@ RUST_LOG=info
 cargo run
 ```
 
+## 前端文档
+
+项目包含一个独立的 Vite 纯静态多页面接口文档站，位于 `docs/`，未使用 Tailwind CSS。文档站包含概览、接口参考、运维说明、AI 对接页面，并提供 GitHub 打开按钮与代码高亮。
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+构建静态产物：
+
+```bash
+cd docs
+npm run build
+```
+
+AI 快速对接文档位于 `docs/public/ai-integration.md`，构建后会输出为 `/ai-integration.md`。
+
 ## 图片 API
 
 ### 上传单条 URL
