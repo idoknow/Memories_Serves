@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp target/release/memories-serves dist/
+          cp README.md LICENSE dist/
+          tar -C dist -czf memories-serves-linux-x86_64.tar.gz memories-serves README.md LICENSE
+          sha256sum memories-serves-linux-x86_64.tar.gz > memories-serves-linux-x86_64.tar.gz.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: memories-serves-linux-x86_64
+          path: |
+            memories-serves-linux-x86_64.tar.gz
+            memories-serves-linux-x86_64.tar.gz.sha256
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            memories-serves-linux-x86_64.tar.gz
+            memories-serves-linux-x86_64.tar.gz.sha256

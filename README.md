@@ -1,8 +1,35 @@
 # Memories Serves
 
-轻量图片 URL API 服务，使用 Rust、Axum、SQLx 和高性能 SQLite。程序启动脚本会在缺少 Rust 环境时自动安装 rustup，再编译 release 版本运行，适合 2c2g 小服务器单实例稳定运行。
+轻量图片 URL API 服务，使用 Rust、Axum、SQLx 和高性能 SQLite。推荐直接下载 GitHub Release 里的 Linux 二进制运行；也可以在服务器上从源码编译，适合 2c2g 小服务器单实例稳定运行。
 
 ## 启动
+
+### 直接下载 Release 运行
+
+服务器不需要安装 Rust 或 C 编译工具链，直接下载发布好的二进制：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/idoknow/Memories_Serves/main/scripts/install-release.sh | bash
+cd /opt/memories-serves
+HOST=0.0.0.0 PORT=3000 ./memories-serves
+```
+
+下载指定版本：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/idoknow/Memories_Serves/main/scripts/install-release.sh | bash -s -- v0.1.0
+```
+
+创建 GitHub Release：
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Actions 会自动编译并上传 `memories-serves-linux-x86_64.tar.gz`。
+
+### 从源码编译运行
 
 推荐 Linux 服务器直接运行启动脚本：
 
